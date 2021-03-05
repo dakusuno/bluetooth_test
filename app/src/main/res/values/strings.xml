@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">bluetooth_test</string>
+    <string name="bluetooth_list">Daftar Perangkat</string>
+</resources>
