@@ -8,7 +8,7 @@ import com.skydoves.baserecyclerviewadapter.BaseAdapter
 import com.skydoves.baserecyclerviewadapter.BaseViewHolder
 import com.skydoves.baserecyclerviewadapter.SectionRow
 
-class DeviceListAdapter(val materialDialog: MaterialDialog) : BaseAdapter() {
+class DeviceListAdapter() : BaseAdapter() {
 
     init {
         addSection(ArrayList<BluetoothDevice>())
@@ -28,6 +28,6 @@ class DeviceListAdapter(val materialDialog: MaterialDialog) : BaseAdapter() {
     }
 
     override fun viewHolder(layout: Int, view: View): BaseViewHolder {
-        return DeviceViewHolder(view, materialDialog)
+        return DeviceViewHolder(view)
     }
 }
