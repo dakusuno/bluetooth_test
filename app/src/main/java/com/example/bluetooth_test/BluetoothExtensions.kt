@@ -27,70 +27,29 @@ class BluetoothExtensions {
     val bluetoothDeviceLD= MutableLiveData<List<BluetoothDevice>>()
 
     val arrayDevice = ArrayList<BluetoothDevice>()
-    fun isEnabled(): Boolean {
-        return bluetoothAdapter.isEnabled
-    }
-    suspend fun connect(device:String): OutputStream? {
+    suspend fun connect(device:String,message:(String)->Unit) {
         return withContext(Dispatchers.IO) {
-            var outputStream: OutputStream? = null
             val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
             if (bluetoothAdapter != null && bluetoothAdapter.isEnabled) {
                 try {
                     val bluetoothAddress = device // replace with your device's address
                     val bluetoothDevice = bluetoothAdapter.getRemoteDevice(bluetoothAddress)
-                    val bluetoothSocket = bluetoothDevice?.createRfcommSocketToServiceRecord(
+                    var bluetoothSocket = bluetoothDevice?.createRfcommSocketToServiceRecord(
                         UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
                     )
-                    bluetoothAdapter.cancelDiscovery()
                     bluetoothSocket?.connect()
-                    if (bluetoothSocket!!.isConnected) {
-                        outputStream = bluetoothSocket.outputStream
-                        outputStream.write("Device Connected".toByteArray())
-                        outputStream.write("Device Connected".toByteArray())
-                        outputStream.write("Device Connected".toByteArray())
-                        outputStream.write("Device Connected".toByteArray())
-                        outputStream.write("Device Connected".toByteArray())
-                    }
-                } catch (e: Exception){
-                    Log.d("TAG", "connect: ${e.message}")
-                }
-            }
-            outputStream
-        }
-    }
-    fun connectBottomSheet(dialog: DialogBehavior = ModalDialog, lifecycleOwner: LifecycleOwner,context: Context) {
-        val filter = IntentFilter()
-        bluetoothAdapter.startDiscovery()
-        filter.addAction(BluetoothDevice.ACTION_FOUND)
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED)
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
-        context.registerReceiver(receiver, filter)
-
-        MaterialDialog(context, dialog).show {
-            val deviceAdapter = DeviceListAdapter(this)
-            val discoverAdapter = DeviceListAdapter(this)
-            setTitle(R.string.bluetooth_list)
-
-            customView(R.layout.bottomsheet_connect, scrollable = true, horizontalPadding = true)
-            val recyclerview: RecyclerView = findViewById(R.id.recyclerview_device_paired)
-            recyclerview.apply {
-                adapter = deviceAdapter.apply {
-                    addItems(bluetoothAdapter.bondedDevices.toList())
-                }
-            }
-            val recyclerConnect = findViewById<RecyclerView>(R.id.recyclerview_device_discovered)
-            recyclerConnect.apply {
-                bluetoothDeviceLD.observe(lifecycleOwner, Observer {
-                    Log.d("list",it.toString())
-                    if(!it.isNullOrEmpty()){
-                        this.adapter = discoverAdapter.apply {
-                            addItems(it)
+                    if (bluetoothSocket != null) {
+                        if(bluetoothSocket.isConnected){
+                            message("Success")
                         }
                     }
-                })
+                    bluetoothSocket?.inputStream?.close()
+                    bluetoothSocket?.outputStream?.close()
+                    bluetoothSocket?.close()
+                } catch (e: Exception){
+                    message(e.message.toString())
+                }
             }
-
-            negativeButton(android.R.string.cancel)
         }
     }
     val receiver: BroadcastReceiver = object : BroadcastReceiver() {
